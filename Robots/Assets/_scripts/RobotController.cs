@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using TMPro;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,21 +44,46 @@ public class RobotController : MonoBehaviour
 
 
     public void compileCode(List<GameObject> codeObjects)
-    {
+    {   
+        Debug.Log(codeObjects.Count);
         for (int i = 0; i < codeObjects.Count; i++) 
         {
             GameObject go = codeObjects[i];
-                if (go != null) 
+            if (go == null) return;
+
+            // function compile    
+            if (go.name == "Panel_Function(Clone)")
+            {
+                CodingElement_Function codingElement = go.GetComponent<CodingElement_Function>();
+                int selectedIndex = codingElement.availableFunctions.value;
+                string functionString = codingElement.availableFunctions.options[selectedIndex].text;
+                //add parameters
+                string parameters = null;
+                if (go.transform.childCount > 1)
                 {
-                    if (go.name == "Panel_Function")
+                    //skip first child. it is dropdown
+                    for (int ii = 1; ii < go.transform.childCount; ii++)
                     {
-                    CodingElement_Function codingElement = go.GetComponent<CodingElement_Function>();
-                    string CodeName = codingElement.availableFunctions.options[codingElement.availableFunctions.value].ToString();
-
-                    
-                    } 
-
+                        if (ii == go.transform.childCount - 1) parameters = parameters + go.transform.GetChild(ii).GetComponent<TMP_InputField>().text;
+                        else parameters = parameters + go.transform.GetChild(ii).GetComponent<TMP_InputField>().text + ",";
+                    }
                 }
+                //send broadcast 
+                if (parameters == null) BroadcastMessage(functionString);
+                else BroadcastMessage(functionString, parameters);
+                Debug.Log("func ran");
+            }
+
+            // condition compile
+            else if (go.name == "Panel_Condition(Clone)")
+            {
+                CodingElement_Condition codingElement = go.GetComponent<CodingElement_Condition>();
+                int selectedIndex = codingElement.availableConditions.value;
+                string functionString = codingElement.availableConditions.options[selectedIndex].text;
+
+                // commence condition
+               
+            }
         }
     }
 
